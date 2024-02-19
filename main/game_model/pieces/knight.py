@@ -16,7 +16,7 @@ class Knight(Piece):
         ]
         for d in move_offsets:
             new_pos = (self.position[0] + d[0], self.position[1] + d[1])
-            if board.is_valid_position(new_pos) and\
+            if board.is_valid_position(new_pos) and \
                     (board.is_empty(new_pos) or board.piece_at(new_pos).color != self.color):
-                moves.append(new_pos)
+                moves.append((self.position, new_pos))
         return moves

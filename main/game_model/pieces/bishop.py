@@ -12,13 +12,11 @@ class Bishop(Piece):
             for i in range(1, 8):
                 new_pos = (self.position[0] + d[0] * i, self.position[1] + d[1] * i)
                 if board.is_valid_position(new_pos):
-                    if board.is_empty(new_pos):
-                        moves.append(new_pos)
-                    elif board.piece_at(new_pos).color != self.color:
-                        moves.append(new_pos)
-                        break
-                    else:
+                    if board.is_empty(new_pos) or board.piece_at(new_pos).color != self.color:
+                        moves.append((self.position, new_pos))
+                    if board.piece_at(new_pos) is not None:
                         break
                 else:
                     break
         return moves
+

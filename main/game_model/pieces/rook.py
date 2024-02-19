@@ -15,9 +15,9 @@ class Rook(Piece):
                 if 0 <= end_row < 8 and 0 <= end_col < 8:
                     end_piece = board.piece_at((end_row, end_col))
                     if end_piece is None:
-                        moves.append((end_row, end_col))
+                        moves.append((self.position, (end_row, end_col)))
                     elif end_piece.color != self.color:
-                        moves.append((end_row, end_col))
+                        moves.append((self.position, (end_row, end_col)))
                         break
                     else:
                         break

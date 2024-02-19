@@ -1,7 +1,9 @@
 import pygame
 
 from main.game_model.Board import Board
-from main.game_model.pieces import King
+from main.game_model.pieces import King, Bishop, Knight
+
+
 class game_main:
     def __init__(self):
         pygame.init()
@@ -20,9 +22,8 @@ class game_main:
                 pygame.draw.rect(self.screen, color, pygame.Rect(col * 100, row * 100, 100, 100))
 
         # Highlight squares based on possible moves
-        possible_moves = self.board.get_all_possible_moves(self.current_turn)
-        for move in possible_moves:
-            pygame.draw.rect(self.screen, (0, 255, 255), pygame.Rect(move[1] * 100, move[0] * 100, 100, 100), 5)
+        for start_pos, end_pos in self.board.get_all_possible_moves(self.current_turn):
+            pygame.draw.rect(self.screen, (0, 255, 255), pygame.Rect(end_pos[1] * 100, end_pos[0] * 100, 100, 100), 5)
 
         # Draw the pieces
         for row in range(8):
@@ -46,45 +47,41 @@ class game_main:
             self.draw()
             pygame.display.flip()
 
-            # Debugging: Print the check and checkmate status
-            if self.board.is_in_check(self.current_turn):
-                print(f"{self.current_turn} is in check.")
-                self.game_over = False
-
+            # Check for checkmate or draw
             if self.is_checkmate():
                 print(f"Checkmate detected for {self.current_turn}. Game over.")
                 self.game_over = True
-
             elif self.is_draw():
                 print("Draw detected. Game over.")
                 self.game_over = True
-            else:
-                # Continue with the game logic
-                self.game_over = False
 
             if self.game_over:
-                self.running = False
-                # Display the result more clearly or pause for input
+                # Properly handle game over state
                 print("Game over. Press any key to exit.")
-                pygame.event.wait()
+                pygame.event.wait()  # This waits for any event, consider waiting for a specific event like a key press
+                self.running = False  # Stop the game loop
 
             pygame.time.delay(100)
 
     def handle_mouse_click(self, position):
         col = position[0] // 100
         row = position[1] // 100
-        selected_pos = (row, col)
+        clicked_pos = (row, col)
 
         if self.selected_piece:
-            success = self.make_move(self.selected_piece, selected_pos)
-            if success:
-                self.selected_piece = None
+            start_pos = self.selected_piece
+            end_pos = clicked_pos
+            if self.make_move(start_pos, end_pos):
+                # Move was successful, switch turns
+                self.switch_turns()
+                self.selected_piece = None  # Deselect the piece after successfully moving
             else:
-                # illegal move or trying to select another piece
-                self.selected_piece = selected_pos if self.board.piece_at(selected_pos) else None
+                # Move was not successful, decide whether to deselect or reselect based on the clicked position
+                self.selected_piece = None if self.board.piece_at(clicked_pos) and self.board.piece_at(clicked_pos).color != self.current_turn else clicked_pos
         else:
-            if self.board.piece_at(selected_pos) and self.board.piece_at(selected_pos).color == self.current_turn:
-                self.selected_piece = selected_pos
+            # Select a piece if it belongs to the current player
+            if self.board.piece_at(clicked_pos) and self.board.piece_at(clicked_pos).color == self.current_turn:
+                self.selected_piece = clicked_pos
 
     def switch_turns(self):
         self.current_turn = 'black' if self.current_turn == 'white' else 'white'
@@ -99,12 +96,15 @@ class game_main:
             print("No piece at the start position or not your turn.")
             return False
 
-        if end_pos in piece.possible_moves(self.board):
+        valid_moves = piece.possible_moves(self.board)
+        if (start_pos, end_pos) in valid_moves:
             self.board.move_piece(start_pos, end_pos)
             if self.board.is_in_check(self.current_turn):
+                # Undo the move if it results in check
+                self.board.move_piece(end_pos, start_pos)
                 print("Move puts you in check, try another move.")
                 return False
-            self.switch_turns()
+            # Move is successful
             return True
         else:
             print("Illegal move for the piece.")
@@ -117,23 +117,31 @@ class game_main:
         # Get all possible moves for the current player
         all_moves = self.board.get_all_possible_moves(self.current_turn)
 
-        # Try each move to see if it can escape check
-        for start_pos, end_pos in all_moves:
-            # Simulate the move
+        for move in all_moves:
+            start_pos, end_pos = move  # Unpacking the move tuple
             piece = self.board.piece_at(start_pos)
             captured_piece = self.board.piece_at(end_pos)
+
+            # Simulate the move
             self.board.move_piece(start_pos, end_pos)
 
-            # Check if still in check
+            # Check if the move gets the current player out of check
             still_in_check = self.board.is_in_check(self.current_turn)
 
             # Undo the move
             self.board.move_piece(end_pos, start_pos)
             if captured_piece:
+                # Restore the captured piece if there was one
                 self.board.board[end_pos[0]][end_pos[1]] = captured_piece
+            else:
+                # Ensure the end position is cleared if it was a simple move
+                self.board.board[end_pos[0]][end_pos[1]] = None
 
-            # If found a move that escapes check, not checkmate
+            # Restore the piece's original position
+            self.board.board[start_pos[0]][start_pos[1]] = piece
+
             if not still_in_check:
+                # Found a move that can escape check, so it's not checkmate
                 return False
 
         # If no moves escape check, it's checkmate
@@ -141,15 +149,32 @@ class game_main:
 
     def is_draw(self):
         # Check for stalemate: no legal moves but not in check
-        if not self.board.get_all_possible_moves(self.current_turn) and not self.board.is_in_check(self.current_turn):
-            print("Draw due to stalemate.")
-            return True
+        if not self.board.is_in_check(self.current_turn):
+            all_possible_moves = self.board.get_all_possible_moves(self.current_turn)
+            if not all_possible_moves:
+                print("Draw due to stalemate.")
+                return True
 
-        # Simplified check for insufficient material: only kings left
+        # Check for insufficient material: only kings left, or kings with a bishop/knight
         pieces = [piece for row in self.board.board for piece in row if piece is not None]
         if len(pieces) == 2 and all(isinstance(piece, King) for piece in pieces):
             print("Draw due to insufficient material.")
             return True
+        if len(pieces) <= 4:
+            piece_types = [type(piece) for piece in pieces]
+            if piece_types.count(King) == 2 and (piece_types.count(Bishop) == 1 or piece_types.count(Knight) == 1):
+                print("Draw due to insufficient material.")
+                return True
+            if piece_types.count(King) == 2 and piece_types.count(Bishop) == 2:
+                bishops_on_same_color = all(
+                    (piece.position[0] + piece.position[1]) % 2 == 0 for piece in pieces if isinstance(piece, Bishop))
+                if bishops_on_same_color or not bishops_on_same_color:
+                    print("Draw due to insufficient material.")
+                    return True
+
+        # Implement other draw conditions as needed
+
+        return False
 
     @staticmethod
     def main():

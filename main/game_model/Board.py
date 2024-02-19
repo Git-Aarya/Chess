@@ -69,6 +69,7 @@ class Board:
     def is_in_check(self, color):
         king_position = None
 
+        # Find the king's position
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
@@ -83,8 +84,9 @@ class Board:
 
         opponent_color = 'black' if color == 'white' else 'white'
 
-        for move in self.get_all_possible_moves(opponent_color):
-            if move == king_position:
+        # Check if any move attacks the king's position
+        for start_pos, end_pos in self.get_all_possible_moves(opponent_color):
+            if end_pos == king_position:
                 return True
 
         return False
