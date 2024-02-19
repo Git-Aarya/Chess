@@ -21,9 +21,14 @@ class game_main:
                 color = (119, 149, 86) if (row + col) % 2 == 0 else (235, 236, 208)
                 pygame.draw.rect(self.screen, color, pygame.Rect(col * 100, row * 100, 100, 100))
 
-        # Highlight squares based on possible moves
-        for start_pos, end_pos in self.board.get_all_possible_moves(self.current_turn):
-            pygame.draw.rect(self.screen, (0, 255, 255), pygame.Rect(end_pos[1] * 100, end_pos[0] * 100, 100, 100), 5)
+        # Highlight squares for the selected piece's possible moves
+        if self.selected_piece:
+            piece = self.board.piece_at(self.selected_piece)
+            if piece:
+                possible_moves = piece.possible_moves(self.board)
+                for _, end_pos in possible_moves:
+                    pygame.draw.rect(self.screen, (0, 255, 255),
+                                     pygame.Rect(end_pos[1] * 100, end_pos[0] * 100, 100, 100), 5)
 
         # Draw the pieces
         for row in range(8):
