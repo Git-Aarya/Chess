@@ -1,5 +1,5 @@
 # game_model/Board.py
-from .pieces import King, Queen, Bishop, Knight, Rook, Pawn
+from main.game_model.pieces import Rook, Knight, Bishop, Queen, King, Pawn
 
 
 class Board:
@@ -50,6 +50,7 @@ class Board:
         if captured_piece and not is_simulation:
             print(f"{moving_piece} captures {captured_piece} at {end_pos}")
 
+
         # Execute the move
         self.board[end_pos[0]][end_pos[1]] = moving_piece
         self.board[start_pos[0]][start_pos[1]] = None
@@ -57,7 +58,9 @@ class Board:
         # Update the moving piece's position attribute
         moving_piece.position = end_pos
 
-        # Additional logic might be needed here if you're handling special moves or promotions.
+        # Pawn Promotion
+        if isinstance(moving_piece, Pawn) and (end_pos[0] == 0 or end_pos[0] == 7):
+            self.board[end_pos[0]][end_pos[1]] = Queen(moving_piece.color, end_pos)
 
     def get_all_possible_moves(self, color):
         moves = []
