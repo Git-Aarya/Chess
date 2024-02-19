@@ -4,7 +4,7 @@ class Piece:
     def __init__(self, color, name, position):
         self.color = color
         self.name = name
-        self.position = position  # Position is a tuple (row, col)
+        self.position = position
 
     def possible_moves(self, board):
         raise NotImplementedError("Subclasses must implement this method")

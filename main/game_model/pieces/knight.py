@@ -14,9 +14,9 @@ class Knight(Piece):
             (+1, -2), (+1, +2),
             (+2, -1), (+2, +1)
         ]
-        for offset in move_offsets:
-            new_row = self.position[0] + offset[0]
-            new_col = self.position[1] + offset[1]
-            if 0 <= new_row < 8 and 0 <= new_col < 8:  # Check if move is within board bounds
-                moves.append((new_row, new_col))
+        for d in move_offsets:
+            new_pos = (self.position[0] + d[0], self.position[1] + d[1])
+            if board.is_valid_position(new_pos) and\
+                    (board.is_empty(new_pos) or board.piece_at(new_pos).color != self.color):
+                moves.append(new_pos)
         return moves

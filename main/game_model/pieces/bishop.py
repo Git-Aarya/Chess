@@ -7,7 +7,7 @@ class Bishop(Piece):
 
     def possible_moves(self, board):
         moves = []
-        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]  # Diagonal directions
+        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         for d in directions:
             for i in range(1, 8):
                 new_pos = (self.position[0] + d[0] * i, self.position[1] + d[1] * i)
@@ -16,9 +16,9 @@ class Bishop(Piece):
                         moves.append(new_pos)
                     elif board.piece_at(new_pos).color != self.color:
                         moves.append(new_pos)
-                        break  # Stop on capture
+                        break
                     else:
-                        break  # Own piece blocks the way
+                        break
                 else:
-                    break  # Off the board
+                    break
         return moves

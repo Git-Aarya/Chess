@@ -22,7 +22,8 @@ class Board:
         row, col = position
         return self.is_valid_position(position) and self.board[row][col] is None
 
-    def is_valid_position(self, position):
+    @staticmethod
+    def is_valid_position(position):
         row, col = position
         return 0 <= row < 8 and 0 <= col < 8
 
@@ -54,7 +55,7 @@ class Board:
         self.board[end_pos[0]][end_pos[1]] = piece
         self.board[start_pos[0]][start_pos[1]] = None
 
-        # Update the piece's position (if your Piece class stores its position)
+        # Update the piece's position
         piece.position = end_pos
 
     def get_all_possible_moves(self, color):
@@ -67,6 +68,7 @@ class Board:
 
     def is_in_check(self, color):
         king_position = None
+
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
@@ -77,11 +79,13 @@ class Board:
                 break
 
         if not king_position:
-            return False  # Shouldn't happen if the board is set up correctly
+            return False
 
         opponent_color = 'black' if color == 'white' else 'white'
+
         for move in self.get_all_possible_moves(opponent_color):
             if move == king_position:
                 return True
+
         return False
 

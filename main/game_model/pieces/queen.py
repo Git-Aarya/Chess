@@ -7,8 +7,8 @@ class Queen(Piece):
 
     def possible_moves(self, board):
         moves = []
-        directions = [(1, 0), (0, 1), (-1, 0), (0, -1),  # straight directions
-                      (1, 1), (-1, 1), (1, -1), (-1, -1)]  # diagonal directions
+        directions = [(1, 0), (0, 1), (-1, 0), (0, -1),
+                      (1, 1), (-1, 1), (1, -1), (-1, -1)]
         for d in directions:
             for i in range(1, 8):
                 new_pos = (self.position[0] + d[0] * i, self.position[1] + d[1] * i)
@@ -17,10 +17,10 @@ class Queen(Piece):
                         moves.append(new_pos)
                     elif board.piece_at(new_pos).color != self.color:
                         moves.append(new_pos)
-                        break  # Stop on capture
+                        break
                     else:
-                        break  # Own piece blocks the way
+                        break
                 else:
-                    break  # Off the board
+                    break
         return moves
 

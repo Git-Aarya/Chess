@@ -8,8 +8,8 @@ class Pawn(Piece):
 
     def possible_moves(self, board):
         moves = []
-        direction = -1 if self.color == 'white' else 1  # White pawns move up (-1), black pawns move down (+1)
-        start_row = 6 if self.color == 'white' else 1  # Starting row for white and black pawns
+        direction = -1 if self.color == 'white' else 1
+        start_row = 6 if self.color == 'white' else 1
         one_step_forward = (self.position[0] + direction, self.position[1])
 
         # Move one step forward

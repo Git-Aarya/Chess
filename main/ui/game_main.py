@@ -19,15 +19,21 @@ class game_main:
                 color = (119, 149, 86) if (row + col) % 2 == 0 else (235, 236, 208)
                 pygame.draw.rect(self.screen, color, pygame.Rect(col * 100, row * 100, 100, 100))
 
+        # Highlight squares based on possible moves
+        possible_moves = self.board.get_all_possible_moves(self.current_turn)
+        for move in possible_moves:
+            pygame.draw.rect(self.screen, (0, 255, 255), pygame.Rect(move[1] * 100, move[0] * 100, 100, 100), 5)
+
         # Draw the pieces
         for row in range(8):
             for col in range(8):
                 piece = self.board.piece_at((row, col))
                 if piece:
-                    image = pygame.image.load(f'images/{piece}.png')  # Ensure you have correct path and naming
-                    self.screen.blit(image, (col * 100, row * 100))
-
-        # Additional UI elements like highlighting can be added here
+                    image = pygame.image.load(f'images/{piece}.png')
+                    image_rect = image.get_rect()
+                    centered_x = col * 100 + (100 - image_rect.width) // 2
+                    centered_y = row * 100 + (100 - image_rect.height) // 2
+                    self.screen.blit(image, (centered_x, centered_y))
 
     def play(self):
         while self.running:
@@ -43,9 +49,12 @@ class game_main:
             # Debugging: Print the check and checkmate status
             if self.board.is_in_check(self.current_turn):
                 print(f"{self.current_turn} is in check.")
+                self.game_over = False
+
             if self.is_checkmate():
                 print(f"Checkmate detected for {self.current_turn}. Game over.")
                 self.game_over = True
+
             elif self.is_draw():
                 print("Draw detected. Game over.")
                 self.game_over = True
@@ -57,26 +66,25 @@ class game_main:
                 self.running = False
                 # Display the result more clearly or pause for input
                 print("Game over. Press any key to exit.")
-                pygame.event.wait()  # Wait for any event before exiting
+                pygame.event.wait()
 
-            # Add a small delay to ensure the game loop doesn't run too fast
             pygame.time.delay(100)
 
     def handle_mouse_click(self, position):
-        col = position[0] // 100  # Assuming each square is 100x100 pixels
+        col = position[0] // 100
         row = position[1] // 100
         selected_pos = (row, col)
 
         if self.selected_piece:
             success = self.make_move(self.selected_piece, selected_pos)
             if success:
-                self.selected_piece = None  # Deselect piece after successful move
+                self.selected_piece = None
             else:
-                # Handle failed move attempt (e.g., illegal move or trying to select another piece)
+                # illegal move or trying to select another piece
                 self.selected_piece = selected_pos if self.board.piece_at(selected_pos) else None
         else:
             if self.board.piece_at(selected_pos) and self.board.piece_at(selected_pos).color == self.current_turn:
-                self.selected_piece = selected_pos  # Select the piece
+                self.selected_piece = selected_pos
 
     def switch_turns(self):
         self.current_turn = 'black' if self.current_turn == 'white' else 'white'
@@ -92,10 +100,9 @@ class game_main:
             return False
 
         if end_pos in piece.possible_moves(self.board):
-            self.board.move_piece(start_pos, end_pos)  # Assuming this method also handles captures
+            self.board.move_piece(start_pos, end_pos)
             if self.board.is_in_check(self.current_turn):
                 print("Move puts you in check, try another move.")
-                # Undo the move here if you implement such functionality
                 return False
             self.switch_turns()
             return True
@@ -105,7 +112,7 @@ class game_main:
 
     def is_checkmate(self):
         if not self.board.is_in_check(self.current_turn):
-            return False  # Not in check, so can't be checkmate
+            return False
 
         # Get all possible moves for the current player
         all_moves = self.board.get_all_possible_moves(self.current_turn)
