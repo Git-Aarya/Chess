@@ -98,10 +98,10 @@ class game_main:
 
         valid_moves = piece.possible_moves(self.board)
         if (start_pos, end_pos) in valid_moves:
-            self.board.move_piece(start_pos, end_pos)
+            self.board.move_piece(start_pos, end_pos, False)
             if self.board.is_in_check(self.current_turn):
                 # Undo the move if it results in check
-                self.board.move_piece(end_pos, start_pos)
+                self.board.move_piece(end_pos, start_pos, False)
                 print("Move puts you in check, try another move.")
                 return False
             # Move is successful
@@ -123,13 +123,13 @@ class game_main:
             captured_piece = self.board.piece_at(end_pos)
 
             # Simulate the move
-            self.board.move_piece(start_pos, end_pos)
+            self.board.move_piece(start_pos, end_pos, True)
 
             # Check if the move gets the current player out of check
             still_in_check = self.board.is_in_check(self.current_turn)
 
             # Undo the move
-            self.board.move_piece(end_pos, start_pos)
+            self.board.move_piece(end_pos, start_pos, True)
             if captured_piece:
                 # Restore the captured piece if there was one
                 self.board.board[end_pos[0]][end_pos[1]] = captured_piece

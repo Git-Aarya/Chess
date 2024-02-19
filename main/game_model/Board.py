@@ -33,30 +33,31 @@ class Board:
             return None
         return self.board[row][col]
 
-    def move_piece(self, start_pos, end_pos):
-        # Validate positions
+    def move_piece(self, start_pos, end_pos, is_simulation=False):
+        # Validate positions first
         if not self.is_valid_position(start_pos) or not self.is_valid_position(end_pos):
             raise ValueError("Positions out of bounds")
 
-        # Get the piece to move
-        piece = self.piece_at(start_pos)
-        if piece is None:
+        # Get the piece at the start position
+        moving_piece = self.piece_at(start_pos)
+        if moving_piece is None:
             raise ValueError("No piece at start position")
 
-        # Optionally, handle captures
-        target_piece = self.piece_at(end_pos)
-        if target_piece is not None and target_piece.color != piece.color:
-            # Capture logic: for now, simply remove the target piece
-            print(f"{piece} captures {target_piece} at {end_pos}")
-        elif target_piece is not None:
-            raise ValueError("Cannot capture your own piece")
+        # Check if there's a piece at the end position (potential capture)
+        captured_piece = self.piece_at(end_pos)
 
-        # Move the piece
-        self.board[end_pos[0]][end_pos[1]] = piece
+        # If it's not a simulation, log the capture
+        if captured_piece and not is_simulation:
+            print(f"{moving_piece} captures {captured_piece} at {end_pos}")
+
+        # Execute the move
+        self.board[end_pos[0]][end_pos[1]] = moving_piece
         self.board[start_pos[0]][start_pos[1]] = None
 
-        # Update the piece's position
-        piece.position = end_pos
+        # Update the moving piece's position attribute
+        moving_piece.position = end_pos
+
+        # Additional logic might be needed here if you're handling special moves or promotions.
 
     def get_all_possible_moves(self, color):
         moves = []
