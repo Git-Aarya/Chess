@@ -23,7 +23,7 @@ def load_images():
     for piece in pieces:
         filename = f"{piece[0].lower()}{piece[1]}.png"  # Construct the filename based on the piece names
         images[piece] = pygame.transform.scale(
-            pygame.image.load(os.path.join('images', filename)),
+            pygame.image.load(os.path.join('../game_model/images', filename)),
             (SQUARE_SIZE, SQUARE_SIZE)
         )
     return images
@@ -72,6 +72,7 @@ def main():
         clock.tick(60)
 
     pygame.quit()
+
 
 
 if __name__ == "__main__":

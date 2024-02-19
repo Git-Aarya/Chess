@@ -13,7 +13,7 @@ class Rook(Piece):
                 end_row = self.position[0] + d[0] * i
                 end_col = self.position[1] + d[1] * i
                 if 0 <= end_row < 8 and 0 <= end_col < 8:  # Stay within board bounds
-                    end_piece = board[end_row][end_col]
+                    end_piece = board.piece_at((end_row, end_col))
                     if end_piece is None:
                         moves.append((end_row, end_col))  # Empty square is a valid move
                     elif end_piece.color != self.color:

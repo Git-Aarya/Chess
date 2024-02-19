@@ -130,3 +130,10 @@ class Game:
 
         return False
 
+    def main():
+        game_instance = Game()
+        game_instance.play()
+
+if __name__ == "__main__":
+    Game.main()
+
