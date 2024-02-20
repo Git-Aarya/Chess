@@ -13,6 +13,123 @@ class game_main:
         self.selected_piece = None
         self.running = True
         self.game_over = False
+        self.game_over = False
+        self.is_invisible_mode = False
+
+    def display_start_menu(self):
+        menu_running = True
+
+        bg_image = pygame.image.load('bg/bg_image.jpg')
+        bg_image = pygame.transform.scale(bg_image, self.screen.get_size())
+
+        bg_color = (3, 37, 76)  # Dark blue background
+        text_color = (255, 255, 255)  # White text
+        button_color = (85, 45, 10)  # buttons
+        hover_color = (45, 21,0)  # hover color
+        border_color = (255, 255, 255)  # border color
+        font = pygame.font.Font(None, 36)  # Adjust font size as needed
+
+        screen_width, screen_height = self.screen.get_size()
+        button_width = 230
+        button_height = 50
+        button_x = (screen_width - button_width) // 2
+        button1_y = screen_height * 0.4
+        button2_y = button1_y + button_height + 20
+
+        button1_rect = pygame.Rect(button_x, button1_y, button_width, button_height)
+        button2_rect = pygame.Rect(button_x, button2_y, button_width, button_height)
+
+        while menu_running:
+            self.screen.blit(bg_image, (0, 0))
+
+            mx, my = pygame.mouse.get_pos()
+            button1_hover = button1_rect.collidepoint((mx, my))
+            button2_hover = button2_rect.collidepoint((mx, my))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    menu_running = False
+                    self.running = False
+                    return None
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if button1_hover:
+                        return 'normal'
+                    elif button2_hover:
+                        return 'invisible'
+
+            # Draw buttons
+            pygame.draw.rect(self.screen, border_color, button1_rect, border_radius=10)
+            pygame.draw.rect(self.screen, border_color, button2_rect, border_radius=10)
+            pygame.draw.rect(self.screen, button_color, button1_rect, border_radius=10)
+            pygame.draw.rect(self.screen, button_color, button2_rect, border_radius=10)
+
+            # Draw hover effect
+            if button1_hover:
+                pygame.draw.rect(self.screen, hover_color, button1_rect, border_radius=10)
+            if button2_hover:
+                pygame.draw.rect(self.screen, hover_color, button2_rect, border_radius=10)
+
+            # Adjust text rendering to be more centered within the buttons
+            text_surface = font.render("Play Normal Chess", True, text_color)
+            self.screen.blit(text_surface, (button_x + (button_width - text_surface.get_width()) / 2,
+                                            button1_y + (button_height - text_surface.get_height()) / 2))
+            text_surface = font.render("Play Blind Pieces", True, text_color)
+            self.screen.blit(text_surface, (button_x + (button_width - text_surface.get_width()) / 2,
+                                            button2_y + (button_height - text_surface.get_height()) / 2))
+
+            pygame.display.flip()
+
+    def display_end_menu(self, winning_color):
+        menu_running = True
+
+        background_image = pygame.image.load('bg/end_bg.jpg')
+        background_image = pygame.transform.scale(background_image, self.screen.get_size())
+        text_color = (0, 0, 0)  # White text
+        hover_color = (0, 51, 51)  # hover color
+        font = pygame.font.Font(None, 50)  # Adjust font size as needed
+
+        screen_width, screen_height = self.screen.get_size()
+        button_diameter = 60  # Use diameter for the circle
+        button_radius = button_diameter // 2
+        button_center_x = (screen_width - button_diameter) // 2 + button_radius
+        button_center_y = (screen_height * 0.49) + 120 + button_radius
+
+        while menu_running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    menu_running = False
+                    self.running = False
+                    return 'quit'
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mx, my = event.pos
+                    distance = ((mx - button_center_x) ** 2 + (my - button_center_y) ** 2) ** 0.5
+                    if distance <= button_radius:
+                        menu_running = False
+                        self.running = False
+                        return 'quit'
+
+            self.screen.blit(background_image, (0, 0))
+
+            # Display winning color
+            text_surface = font.render(f"{winning_color.capitalize()} wins!", True, text_color)
+            text_rect = text_surface.get_rect(center=(screen_width // 2, screen_height * 0.48))
+            self.screen.blit(text_surface, text_rect)
+
+            # Draw hover effect
+            mx, my = pygame.mouse.get_pos()
+            distance = ((mx - button_center_x) ** 2 + (my - button_center_y) ** 2) ** 0.5
+            button_hover = distance <= button_radius
+            if button_hover:
+                pygame.draw.circle(self.screen, hover_color, (button_center_x, button_center_y), button_radius)
+
+            # Adjust text rendering to be more centered within the button
+            text_surface = font.render("X", True, text_color)
+            self.screen.blit(text_surface, (button_center_x - text_surface.get_width() / 2,
+                                            button_center_y - text_surface.get_height() / 2))
+
+            pygame.display.flip()
 
     def draw(self):
         # Draw the board
@@ -31,17 +148,24 @@ class game_main:
                                      pygame.Rect(end_pos[1] * 100, end_pos[0] * 100, 100, 100), 5)
 
         # Draw the pieces
-        for row in range(8):
-            for col in range(8):
-                piece = self.board.piece_at((row, col))
-                if piece:
-                    image = pygame.image.load(f'images/{piece}.png')
-                    image_rect = image.get_rect()
-                    centered_x = col * 100 + (100 - image_rect.width) // 2
-                    centered_y = row * 100 + (100 - image_rect.height) // 2
-                    self.screen.blit(image, (centered_x, centered_y))
+        if not self.is_invisible_mode:
+            for row in range(8):
+                for col in range(8):
+                    piece = self.board.piece_at((row, col))
+                    if piece:
+                        image = pygame.image.load(f'images/{piece}.png')
+                        image_rect = image.get_rect()
+                        centered_x = col * 100 + (100 - image_rect.width) // 2
+                        centered_y = row * 100 + (100 - image_rect.height) // 2
+                        self.screen.blit(image, (centered_x, centered_y))
 
     def play(self):
+        game_mode = self.display_start_menu()  # Display the start menu and get the selected game mode
+        if game_mode is None:
+            return
+
+        self.is_invisible_mode = True if game_mode == 'invisible' else False
+
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -55,9 +179,11 @@ class game_main:
             # Check for checkmate or draw
             if self.is_checkmate():
                 print(f"Checkmate detected for {self.current_turn}. Game over.")
+                self.display_end_menu('black' if self.current_turn == 'white' else 'white')
                 self.game_over = True
             elif self.is_draw():
                 print("Draw detected. Game over.")
+                self.display_end_menu('draw')
                 self.game_over = True
 
             if self.game_over:
