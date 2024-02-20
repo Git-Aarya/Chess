@@ -22,12 +22,11 @@ class game_main:
         bg_image = pygame.image.load('bg/bg_image.jpg')
         bg_image = pygame.transform.scale(bg_image, self.screen.get_size())
 
-        bg_color = (3, 37, 76)  # Dark blue background
         text_color = (255, 255, 255)  # White text
         button_color = (85, 45, 10)  # buttons
         hover_color = (45, 21,0)  # hover color
         border_color = (255, 255, 255)  # border color
-        font = pygame.font.Font(None, 36)  # Adjust font size as needed
+        font = pygame.font.Font(None, 36)  # font size
 
         screen_width, screen_height = self.screen.get_size()
         button_width = 230
@@ -70,7 +69,7 @@ class game_main:
             if button2_hover:
                 pygame.draw.rect(self.screen, hover_color, button2_rect, border_radius=10)
 
-            # Adjust text rendering to be more centered within the buttons
+            # Adjust text to be centered within the buttons
             text_surface = font.render("Play Normal Chess", True, text_color)
             self.screen.blit(text_surface, (button_x + (button_width - text_surface.get_width()) / 2,
                                             button1_y + (button_height - text_surface.get_height()) / 2))
@@ -87,10 +86,10 @@ class game_main:
         background_image = pygame.transform.scale(background_image, self.screen.get_size())
         text_color = (0, 0, 0)  # White text
         hover_color = (0, 51, 51)  # hover color
-        font = pygame.font.Font(None, 50)  # Adjust font size as needed
+        font = pygame.font.Font(None, 50)  # font size
 
         screen_width, screen_height = self.screen.get_size()
-        button_diameter = 60  # Use diameter for the circle
+        button_diameter = 60
         button_radius = button_diameter // 2
         button_center_x = (screen_width - button_diameter) // 2 + button_radius
         button_center_y = (screen_height * 0.49) + 120 + button_radius
@@ -98,7 +97,6 @@ class game_main:
         while menu_running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    menu_running = False
                     self.running = False
                     return 'quit'
 
@@ -106,7 +104,6 @@ class game_main:
                     mx, my = event.pos
                     distance = ((mx - button_center_x) ** 2 + (my - button_center_y) ** 2) ** 0.5
                     if distance <= button_radius:
-                        menu_running = False
                         self.running = False
                         return 'quit'
 
@@ -124,7 +121,7 @@ class game_main:
             if button_hover:
                 pygame.draw.circle(self.screen, hover_color, (button_center_x, button_center_y), button_radius)
 
-            # Adjust text rendering to be more centered within the button
+            # Adjust text to be centered within the button
             text_surface = font.render("X", True, text_color)
             self.screen.blit(text_surface, (button_center_x - text_surface.get_width() / 2,
                                             button_center_y - text_surface.get_height() / 2))
@@ -189,8 +186,8 @@ class game_main:
             if self.game_over:
                 # Properly handle game over state
                 print("Game over. Press any key to exit.")
-                pygame.event.wait()  # This waits for any event, consider waiting for a specific event like a key press
-                self.running = False  # Stop the game loop
+                pygame.event.wait()
+                self.running = False
 
             pygame.time.delay(100)
 
@@ -203,14 +200,11 @@ class game_main:
             start_pos = self.selected_piece
             end_pos = clicked_pos
             if self.make_move(start_pos, end_pos):
-                # Move was successful, switch turns
                 self.switch_turns()
-                self.selected_piece = None  # Deselect the piece after successfully moving
+                self.selected_piece = None
             else:
-                # Move was not successful, decide whether to deselect or reselect based on the clicked position
                 self.selected_piece = None if self.board.piece_at(clicked_pos) and self.board.piece_at(clicked_pos).color != self.current_turn else clicked_pos
         else:
-            # Select a piece if it belongs to the current player
             if self.board.piece_at(clicked_pos) and self.board.piece_at(clicked_pos).color == self.current_turn:
                 self.selected_piece = clicked_pos
 
@@ -235,7 +229,6 @@ class game_main:
                 self.board.move_piece(end_pos, start_pos, False)
                 print("Move puts you in check, try another move.")
                 return False
-            # Move is successful
             return True
         else:
             print("Illegal move for the piece.")
@@ -249,30 +242,25 @@ class game_main:
         all_moves = self.board.get_all_possible_moves(self.current_turn)
 
         for move in all_moves:
-            start_pos, end_pos = move  # Unpacking the move tuple
+            start_pos, end_pos = move
             piece = self.board.piece_at(start_pos)
             captured_piece = self.board.piece_at(end_pos)
 
             # Simulate the move
             self.board.move_piece(start_pos, end_pos, True)
 
-            # Check if the move gets the current player out of check
             still_in_check = self.board.is_in_check(self.current_turn)
 
             # Undo the move
             self.board.move_piece(end_pos, start_pos, True)
             if captured_piece:
-                # Restore the captured piece if there was one
                 self.board.board[end_pos[0]][end_pos[1]] = captured_piece
             else:
-                # Ensure the end position is cleared if it was a simple move
                 self.board.board[end_pos[0]][end_pos[1]] = None
 
-            # Restore the piece's original position
             self.board.board[start_pos[0]][start_pos[1]] = piece
 
             if not still_in_check:
-                # Found a move that can escape check, so it's not checkmate
                 return False
 
         # If no moves escape check, it's checkmate
@@ -302,9 +290,6 @@ class game_main:
                 if bishops_on_same_color or not bishops_on_same_color:
                     print("Draw due to insufficient material.")
                     return True
-
-        # Implement other draw conditions as needed
-
         return False
 
     @staticmethod
