@@ -9,8 +9,6 @@ This project aims to develop a fully functional chess game in Python, offering b
 - **Command-Line Interface:** For those who prefer a minimalist approach or want to play in a terminal.
 - **Move Validation:** Ensures all moves comply with official chess rules.
 - **Check and Checkmate Detection:** Automatically detects check and checkmate situations.
-- **Normal Chess:** Allows players to play the game normally.
-- **Blind Chess:** Allows players to play the game without the pieces being visible.
 
 ## Technologies
 - **Python:** The entire game is developed in Python, utilizing object-oriented programming principles.
